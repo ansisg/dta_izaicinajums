@@ -1,40 +1,59 @@
 name: CI
 
 permissions:
-  issues: write      # comment/update issue comments
-  contents: read     # read the repo
+  contents: read     # you only need read if you’re not writing code back
+  issues: write      # required so create-or-update-comment can post
 
 on:
-  pull_request:                           # for building & training
-    types: [opened, synchronize, reopened]
-  pull_request_target:                    # for posting comments
+  pull_request_target:
     types: [opened, synchronize, reopened]
 
 jobs:
   build-and-train:
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
-        with: { python-version: '3.12.10' }
-      - run: |
-          pip install --upgrade pip
+      - name: Checkout PR code
+        uses: actions/checkout@v4
+        with:
+          # by default pull_request_target checks out the base; this forces HEAD
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref:        ${{ github.event.pull_request.head.ref }}
+          token:      ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.12.10
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
           pip install torch torchvision
-      - run: python train.py --epochs 3 --batch-size 32
-      - run: |
-          echo "..." > metrics.json
+
+      - name: Run quick training
+        run: |
+          python train.py --epochs 3 --batch-size 32
+
+      - name: Upload metrics
+        uses: actions/upload-artifact@v3
+        with:
+          name: metrics
+          path: metrics.json
 
   comment:
-    if: github.event_name == 'pull_request_target'
     needs: build-and-train
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4             # checks out the base for safety
+      - name: Download metrics
+        uses: actions/download-artifact@v3
+        with:
+          name: metrics
+          path: .
+
       - name: Post metrics as PR comment
         uses: peter-evans/create-or-update-comment@v3
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token:        ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.pull_request.number }}
           body: |
             ### Training Report
