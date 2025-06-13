@@ -5,7 +5,7 @@ from torch import nn, optim
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader, SubsetRandomSampler
 import numpy as np
-# test5
+# test6
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Train a simple CNN on MNIST and log metrics to JSON"
