@@ -19,10 +19,6 @@ def parse_args():
         help="Batch size for training and testing"
     )
     parser.add_argument(
-        "--subset", type=float, default=1.0,
-        help="Fraction of training data to use (0<subset<=1)"
-    )
-    parser.add_argument(
         "--metrics", type=str, default="metrics.json",
         help="Path to output metrics JSON file"
     )
@@ -51,6 +47,26 @@ class SimpleCNN(nn.Module):
         x = self.dropout2(x)
         x = self.fc2(x)
         return nn.functional.log_softmax(x, dim=1)
+
+def get_data_loaders(batch_size, subset_fraction):
+    transform = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize((0.1307,), (0.3081,))
+    ])
+    train_dataset = datasets.MNIST(
+        root="./data", train=True, download=True, transform=transform
+    )
+    train_size = len(train_dataset)
+    train_loader = DataLoader(
+        train_dataset, batch_size=batch_size, shuffle=True
+    )
+    test_dataset = datasets.MNIST(
+        root="./data", train=False, download=True, transform=transform
+    )
+    test_loader = DataLoader(
+        test_dataset, batch_size=batch_size, shuffle=False
+    )
+    return train_loader, test_loader
 
 def train(model, device, train_loader, optimizer):
     model.train()
