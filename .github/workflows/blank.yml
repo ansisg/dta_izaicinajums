@@ -1,40 +1,41 @@
-# This is a basic workflow to help you get started with Actions
-
 name: CI
 
 permissions:
-  issues: write
-  
+  issues: write      # comment/update issue comments
+  contents: read     # read the repo
+
 on:
-  pull_request:
+  pull_request:                           # for building & training
+    types: [opened, synchronize, reopened]
+  pull_request_target:                    # for posting comments
     types: [opened, synchronize, reopened]
 
 jobs:
   build-and-train:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with: { python-version: '3.12.10' }
+      - run: |
+          pip install --upgrade pip
+          pip install torch torchvision
+      - run: python train.py --epochs 3 --batch-size 32
+      - run: |
+          echo "..." > metrics.json
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.12.10
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install torch torchvision   # plus any others
-
-      - name: Run quick training
-        run: |
-          python train.py --epochs 3 --batch-size 32
-
+  comment:
+    if: github.event_name == 'pull_request_target'
+    needs: build-and-train
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4             # checks out the base for safety
       - name: Post metrics as PR comment
         uses: peter-evans/create-or-update-comment@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          issue-number: ${{ github.event.pull_request.number || github.run_id }}
+          issue-number: ${{ github.event.pull_request.number }}
           body: |
             ### Training Report
             - **Accuracy:** $(jq .accuracy metrics.json)
