@@ -51,11 +51,12 @@ jobs:
           path: .
 
       - name: Post metrics as PR comment
-        uses: peter-evans/create-or-update-comment@v3
+        uses: fortil/action-create-github-comment@v1
         with:
-          token:        ${{ secrets.GITHUB_TOKEN }}
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
+          # Token to create a comment
+          TOKEN_GITHUB: ${{ secrets.GITHUB_TOKEN }}
+          # Comment to post
+          COMMENT: |
             ### Training Report
             - **Accuracy:** $(jq .accuracy metrics.json)
             - **Loss:** $(jq .loss metrics.json)
