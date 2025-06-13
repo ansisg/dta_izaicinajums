@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: CI: train & report CNN
+name: CI
 
 on:
   push:
@@ -10,6 +10,7 @@ on:
 
 jobs:
   build-and-train:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
