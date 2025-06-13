@@ -48,7 +48,7 @@ class SimpleCNN(nn.Module):
         x = self.fc2(x)
         return nn.functional.log_softmax(x, dim=1)
 
-def get_data_loaders(batch_size, subset_fraction):
+def get_data_loaders(batch_size):
     transform = transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize((0.1307,), (0.3081,))
@@ -105,7 +105,7 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
     train_loader, test_loader = get_data_loaders(
-        args.batch_size, args.subset
+        args.batch_size
     )
 
     model = SimpleCNN()
