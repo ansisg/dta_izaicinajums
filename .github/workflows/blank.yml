@@ -49,17 +49,27 @@ jobs:
         with:
           name: metrics
           path: .
-  
+      
+      - name: Validate metrics file
+        run: |
+          if [ ! -f metrics.json ]; then
+            echo "metrics.json file is missing!"
+            exit 1
+          fi
+          jq .accuracy metrics.json >/dev/null || (echo "Malformed metrics.json file" && exit 1)
+      
       - name: Install jq
         run: sudo apt-get install -y jq
-  
+      
+      - name: Generate metrics comment
+        id: generate_comment
+        run: |
+          ACCURACY=$(jq .accuracy metrics.json)
+          LOSS=$(jq .loss metrics.json)
+          echo "COMMENT=### Training Report\n- **Accuracy:** $ACCURACY\n- **Loss:** $LOSS" >> $GITHUB_ENV
+      
       - name: Post metrics as PR comment
         uses: fortil/action-create-github-comment@v1
         with:
-          # Token to create a comment
           TOKEN_GITHUB: ${{ secrets.GITHUB_TOKEN }}
-          # Comment to post
-          COMMENT: |
-            ### Training Report
-            - **Accuracy:** $(jq .accuracy metrics.json)
-            - **Loss:** $(jq .loss metrics.json)
+          COMMENT: ${{ env.COMMENT }}
