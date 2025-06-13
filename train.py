@@ -100,4 +100,32 @@ def evaluate(model, device, test_loader):
     accuracy = correct / len(test_loader.dataset)
     return test_loss, accuracy
 
+def main():
+    args = parse_args()
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
+    train_loader, test_loader = get_data_loaders(
+        args.batch_size, args.subset
+    )
+
+    model = SimpleCNN()
+
+    for epoch in range(1, args.epochs + 1):
+        train_loss = train(model, device, train_loader, optimizer)
+        print(f"Epoch {epoch}: training loss = {train_loss:.4f}")
+    test_loss, test_accuracy = evaluate(model, device, test_loader)
+    print(f"Test set: average loss = {test_loss:.4f}, accuracy = {test_accuracy:.4f}")
+
+    # Save metrics to JSON
+    metrics = {
+        "loss": test_loss,
+        "accuracy": test_accuracy
+    }
+    with open(args.metrics, 'w') as f:
+        json.dump(metrics, f)
+    print(f"Metrics saved to {args.metrics}")
+
+
+if __name__ == "__main__":
+    main()
 
