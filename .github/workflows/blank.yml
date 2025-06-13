@@ -2,6 +2,9 @@
 
 name: CI
 
+permissions:
+  issues: write
+  
 on:
   pull_request:
     types: [opened, synchronize, reopened]
@@ -25,7 +28,7 @@ jobs:
 
       - name: Run quick training
         run: |
-          python train.py --epochs 10 --batch-size 32
+          python train.py --epochs 3 --batch-size 32
 
       - name: Post metrics as PR comment
         uses: peter-evans/create-or-update-comment@v3
