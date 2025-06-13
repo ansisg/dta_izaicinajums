@@ -29,8 +29,8 @@ class SimpleCNN(nn.Module):
         super(SimpleCNN, self).__init__()
         self.conv1 = nn.Conv2d(1, 32, 3, 1)
         self.conv2 = nn.Conv2d(32, 64, 3, 1)
-        self.dropout1 = nn.Dropout2d(0.25)
-        self.dropout2 = nn.Dropout2d(0.5)
+        self.dropout1 = nn.Dropout(0.25)
+        self.dropout2 = nn.Dropout(0.5)
         self.fc1 = nn.Linear(9216, 128)
         self.fc2 = nn.Linear(128, 10)
 
@@ -48,7 +48,7 @@ class SimpleCNN(nn.Module):
         x = self.fc2(x)
         return nn.functional.log_softmax(x, dim=1)
 
-def get_data_loaders(batch_size, subset_fraction):
+def get_data_loaders(batch_size):
     transform = transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize((0.1307,), (0.3081,))
@@ -100,4 +100,32 @@ def evaluate(model, device, test_loader):
     accuracy = correct / len(test_loader.dataset)
     return test_loss, accuracy
 
+def main():
+    args = parse_args()
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
+    train_loader, test_loader = get_data_loaders(
+        args.batch_size
+    )
+
+    model = SimpleCNN()
+    optimizer = optim.Adadelta(model.parameters(), lr=1.0)
+    for epoch in range(1, args.epochs + 1):
+        train_loss = train(model, device, train_loader, optimizer)
+        print(f"Epoch {epoch}: training loss = {train_loss:.4f}")
+    test_loss, test_accuracy = evaluate(model, device, test_loader)
+    print(f"Test set: average loss = {test_loss:.4f}, accuracy = {test_accuracy:.4f}")
+
+    # Save metrics to JSON
+    metrics = {
+        "loss": test_loss,
+        "accuracy": test_accuracy
+    }
+    with open(args.metrics, 'w') as f:
+        json.dump(metrics, f)
+    print(f"Metrics saved to {args.metrics}")
+
+
+if __name__ == "__main__":
+    main()
 
