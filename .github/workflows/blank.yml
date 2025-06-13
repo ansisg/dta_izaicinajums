@@ -61,11 +61,15 @@ jobs:
       - name: Install jq
         run: sudo apt-get install -y jq
       
+      - name: Generate metrics comment
+        id: generate_comment
+        run: |
+          ACCURACY=$(jq .accuracy metrics.json)
+          LOSS=$(jq .loss metrics.json)
+          echo "COMMENT=### Training Report\n- **Accuracy:** $ACCURACY\n- **Loss:** $LOSS" >> $GITHUB_ENV
+      
       - name: Post metrics as PR comment
         uses: fortil/action-create-github-comment@v1
         with:
           TOKEN_GITHUB: ${{ secrets.GITHUB_TOKEN }}
-          COMMENT: |
-            ### Training Report
-            - **Accuracy:** $(jq .accuracy metrics.json)
-            - **Loss:** $(jq .loss metrics.json)
+          COMMENT: ${{ env.COMMENT }}
