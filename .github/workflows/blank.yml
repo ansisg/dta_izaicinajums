@@ -41,22 +41,25 @@ jobs:
           path: metrics.json
 
   comment:
-    needs: build-and-train
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download metrics
-        uses: actions/download-artifact@v4.3.0
-        with:
-          name: metrics
-          path: .
+  needs: build-and-train
+  runs-on: ubuntu-latest
+  steps:
+    - name: Download metrics
+      uses: actions/download-artifact@v4.3.0
+      with:
+        name: metrics
+        path: .
 
-      - name: Post metrics as PR comment
-        uses: fortil/action-create-github-comment@v1
-        with:
-          # Token to create a comment
-          TOKEN_GITHUB: ${{ secrets.GITHUB_TOKEN }}
-          # Comment to post
-          COMMENT: |
-            ### Training Report
-            - **Accuracy:** $(jq .accuracy metrics.json)
-            - **Loss:** $(jq .loss metrics.json)
+    - name: Install jq
+      run: sudo apt-get install -y jq
+
+    - name: Post metrics as PR comment
+      uses: fortil/action-create-github-comment@v1
+      with:
+        # Token to create a comment
+        TOKEN_GITHUB: ${{ secrets.GITHUB_TOKEN }}
+        # Comment to post
+        COMMENT: |
+          ### Training Report
+          - **Accuracy:** $(jq .accuracy metrics.json)
+          - **Loss:** $(jq .loss metrics.json)
