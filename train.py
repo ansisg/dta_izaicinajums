@@ -109,7 +109,7 @@ def main():
     )
 
     model = SimpleCNN()
-
+    optimizer = optim.Adadelta(model.parameters(), lr=1.0)
     for epoch in range(1, args.epochs + 1):
         train_loss = train(model, device, train_loader, optimizer)
         print(f"Epoch {epoch}: training loss = {train_loss:.4f}")
