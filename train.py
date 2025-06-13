@@ -6,6 +6,28 @@ from torchvision import datasets, transforms
 from torch.utils.data import DataLoader, SubsetRandomSampler
 import numpy as np
 
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Train a simple CNN on MNIST and log metrics to JSON"
+    )
+    parser.add_argument(
+        "--epochs", type=int, default=1,
+        help="Number of training epochs"
+    )
+    parser.add_argument(
+        "--batch-size", type=int, default=32,
+        help="Batch size for training and testing"
+    )
+    parser.add_argument(
+        "--subset", type=float, default=1.0,
+        help="Fraction of training data to use (0<subset<=1)"
+    )
+    parser.add_argument(
+        "--metrics", type=str, default="metrics.json",
+        help="Path to output metrics JSON file"
+    )
+    return parser.parse_args()
+
 class SimpleCNN(nn.Module):
     def __init__(self):
         super(SimpleCNN, self).__init__()
