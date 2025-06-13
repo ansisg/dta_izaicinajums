@@ -33,22 +33,6 @@ jobs:
       - name: Run quick training
         run: |
           python train.py --epochs 1 --batch-size 32
-
-      - name: Upload metrics
-        uses: actions/upload-artifact@v4.6.2
-        with:
-          name: metrics
-          path: metrics.json
-
-  comment:
-    needs: build-and-train
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download metrics
-        uses: actions/download-artifact@v4.3.0
-        with:
-          name: metrics
-          path: .
       
       - name: Validate metrics file
         run: |
@@ -69,7 +53,7 @@ jobs:
           echo "COMMENT=### Training Report\n- **Accuracy:** $ACCURACY\n- **Loss:** $LOSS" >> $GITHUB_ENV
       
       - name: Post metrics as PR comment
-        uses: fortil/action-create-github-comment@v1
+        uses: thollander/actions-comment-pull-request@v1
         with:
-          TOKEN_GITHUB: ${{ secrets.GITHUB_TOKEN }}
-          COMMENT: ${{ env.COMMENT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          message: ${{ env.COMMENT }}
