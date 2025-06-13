@@ -3,6 +3,7 @@ name: CI
 permissions:
   contents: read     # you only need read if you’re not writing code back
   issues: write      # required so create-or-update-comment can post
+  pull-requests: write # required for posting comments on pull requests
 
 on:
   pull_request_target:
@@ -15,10 +16,9 @@ jobs:
       - name: Checkout PR code
         uses: actions/checkout@v4.2.2
         with:
-          # by default pull_request_target checks out the base; this forces HEAD
           repository: ${{ github.event.pull_request.head.repo.full_name }}
-          ref:        ${{ github.event.pull_request.head.ref }}
-          token:      ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.event.pull_request.head.ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Python
         uses: actions/setup-python@v5.6.0
